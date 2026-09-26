@@ -14,6 +14,67 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
+// The package and product names React Native's own generated manifests use. A
+// dependency whose Swift name lands on one of them surfaces as a duplicate-name
+// error from inside SPM's resolution, far from the react-native.config.js that
+// caused it, so the autolinker rejects the collision up front instead.
+//
+// These cover the emitters in this directory and the collision guard. Adding a
+// React Native SPM product also touches, depending on what the product is:
+//   - scripts/codegen/templates/Package.swift.spm-template — if the per-app
+//     codegen package must depend on it (a static Swift file, patched by
+//     string replacement, not generated from these constants)
+//   - flavored-frameworks.js INVARIANT_BINARY_TARGETS — if it is
+//     xcframework-backed
+//   - download-spm-artifacts.js REQUIRED_ARTIFACTS — if it ships as its own
+//     downloadable artifact (that list names ARTIFACTS, which overlap with
+//     product names without being the same set)
+const REACT_NATIVE_PACKAGE_NAME /*: string */ = 'ReactNative';
+const REACT_CODEGEN_PACKAGE_NAME /*: string */ = 'React-GeneratedCode';
+// The autolinking aggregator package, whose single product shares its name.
+const AUTOLINKED_PACKAGE_NAME /*: string */ = 'Autolinked';
+// React Native's products by KIND, so no consumer has to infer the kind from a
+// position in a flat list. The umbrella is a Clang target over the staged
+// headers that re-exports the pure-RN namespaces; the rest are each backed by
+// an xcframework of the same name.
+const REACT_NATIVE_UMBRELLA_PRODUCT /*: string */ = 'ReactHeaders';
+const REACT_NATIVE_HEADERS_PRODUCT /*: string */ = 'ReactNativeHeaders';
+const REACT_NATIVE_DEPENDENCIES_HEADERS_PRODUCT /*: string */ =
+  'ReactNativeDependenciesHeaders';
+const REACT_NATIVE_XCFRAMEWORK_PRODUCTS /*: ReadonlyArray<string> */ =
+  Object.freeze([
+    REACT_NATIVE_HEADERS_PRODUCT,
+    REACT_NATIVE_DEPENDENCIES_HEADERS_PRODUCT,
+  ]);
+// Derived, so a new product cannot be added without choosing a kind above.
+const REACT_NATIVE_PRODUCTS /*: ReadonlyArray<string> */ = Object.freeze([
+  REACT_NATIVE_UMBRELLA_PRODUCT,
+  ...REACT_NATIVE_XCFRAMEWORK_PRODUCTS,
+]);
+// The codegen package product every autolinked target depends on for the app's
+// generated headers.
+const REACT_CODEGEN_PRODUCTS /*: ReadonlyArray<string> */ = Object.freeze([
+  'ReactAppHeaders',
+]);
+// The codegen package products the APP target links, declared by the static
+// template rather than by any emitter here.
+const REACT_CODEGEN_APP_PRODUCTS /*: ReadonlyArray<string> */ = Object.freeze([
+  'ReactCodegen',
+  'ReactAppDependencyProvider',
+]);
+const REACT_HEADERS_TARGET_DIR /*: string */ = 'ReactHeadersTarget';
+// Target names only have to be unique within their own package, so
+// REACT_HEADERS_TARGET_DIR is deliberately absent: a dependency named after it
+// collides with nothing.
+const RESERVED_SWIFT_NAMES /*: ReadonlyArray<string> */ = Object.freeze([
+  REACT_NATIVE_PACKAGE_NAME,
+  REACT_CODEGEN_PACKAGE_NAME,
+  AUTOLINKED_PACKAGE_NAME,
+  ...REACT_NATIVE_PRODUCTS,
+  ...REACT_CODEGEN_PRODUCTS,
+  ...REACT_CODEGEN_APP_PRODUCTS,
+]);
+
 /**
  * Creates a logger trio {log, warn, die} that prefixes messages with [name].
  *   log  – green prefix, writes to stdout
@@ -108,6 +169,29 @@ function toSwiftName(name /*: string */) /*: string */ {
     .filter(Boolean)
     .map(s => s.charAt(0).toUpperCase() + s.slice(1))
     .join('');
+}
+
+// The charset a declared SwiftPM name must satisfy — permissive on purpose,
+// since it has to admit header-dir style (lowercase with hyphens) as well as
+// Swift identifiers.
+function isValidSwiftName(name /*: unknown */) /*: boolean */ {
+  return typeof name === 'string' && /^[A-Za-z_][A-Za-z0-9_-]*$/.test(name);
+}
+
+/**
+ * SwiftPM's `c99name` — the identifier a target's module is compiled under,
+ * with every character C99 rejects replaced by `_`. `react-native-svg` and
+ * `react_native_svg` share one, so they cannot both be targets.
+ */
+function toC99Name(name /*: string */) /*: string */ {
+  const mangled = name.replace(/[^A-Za-z0-9_]/g, '_');
+  return /^[0-9]/.test(mangled) ? `_${mangled}` : mangled;
+}
+
+// Collision key for a Swift target name: two names that share one collide, as a
+// module (punctuation) or as a headers directory (case).
+function swiftNameKey(name /*: string */) /*: string */ {
+  return toC99Name(name).toLowerCase();
 }
 
 /**
@@ -582,10 +666,10 @@ function installSpmCodegenTemplate(
   if (remote != null) {
     content = content
       .replace(
-        '.package(name: "ReactNative", path: "../../xcframeworks"),',
+        `.package(name: "${REACT_NATIVE_PACKAGE_NAME}", path: "../../xcframeworks"),`,
         `.package(url: "${remote.url}", exact: "${remote.version}"),`,
       )
-      .split('package: "ReactNative")')
+      .split(`package: "${REACT_NATIVE_PACKAGE_NAME}")`)
       .join(`package: "${remote.identity}")`);
   }
   fs.writeFileSync(codegenPkgSwift, content, 'utf8');
@@ -666,11 +750,25 @@ function isValidScriptPhaseName(value /*: unknown */) /*: boolean */ {
 }
 
 module.exports = {
+  REACT_NATIVE_PACKAGE_NAME,
+  REACT_CODEGEN_PACKAGE_NAME,
+  AUTOLINKED_PACKAGE_NAME,
+  REACT_NATIVE_UMBRELLA_PRODUCT,
+  REACT_NATIVE_HEADERS_PRODUCT,
+  REACT_NATIVE_XCFRAMEWORK_PRODUCTS,
+  REACT_NATIVE_PRODUCTS,
+  REACT_CODEGEN_PRODUCTS,
+  REACT_CODEGEN_APP_PRODUCTS,
+  REACT_HEADERS_TARGET_DIR,
+  RESERVED_SWIFT_NAMES,
   makeLogger,
   displayPath,
   sharedCacheDir,
   defaultCacheDir,
   toSwiftName,
+  toC99Name,
+  swiftNameKey,
+  isValidSwiftName,
   deriveAppName,
   readPackageJson,
   findProjectRoot,

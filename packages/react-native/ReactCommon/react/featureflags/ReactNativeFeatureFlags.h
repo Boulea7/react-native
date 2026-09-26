@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<196ba25b807fd064ca6150c7d2cd741c>>
+ * @generated SignedSource<<13ce24473fdf631a2689e2ad89904fcd>>
  */
 
 /**
@@ -18,6 +18,8 @@
  */
 
 #pragma once
+
+#include <react/cxxstableapi/UmbrellaGuard.h>
 
 #include <react/featureflags/ReactNativeFeatureFlagsAccessor.h>
 #include <react/featureflags/ReactNativeFeatureFlagsProvider.h>
@@ -100,9 +102,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
 
   /**
-   * When enabled, Android Text measurement and rendering respects the system Bold text accessibility setting via `Configuration.fontWeightAdjustment`.
+   * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
    */
-  RN_EXPORT static bool enableAndroidFontWeightAdjustment();
+  RN_EXPORT static bool enableAndroidAutoOffscreenCompositingForElevation();
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.
@@ -113,6 +115,11 @@ class ReactNativeFeatureFlags {
    * Feature flag to enable the new bridgeless architecture.
    */
   RN_EXPORT static bool enableBridgelessArchitecture();
+
+  /**
+   * Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.
+   */
+  RN_EXPORT static bool enableBufferedCallInvoker();
 
   /**
    * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
@@ -145,9 +152,14 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableExclusivePropsUpdateAndroid();
 
   /**
-   * Enables Fabric commit branching to fix starvation problems and atomic JS updates.
+   * Enables Fabric commit branching to fix atomic JS updates.
    */
   RN_EXPORT static bool enableFabricCommitBranching();
+
+  /**
+   * Enables Fabric commit branching merge to happen on the main thread to fix starvation problems.
+   */
+  RN_EXPORT static bool enableFabricCommitBranchingMergeOnMainThread();
 
   /**
    * This feature flag enables logs for Fabric.
@@ -193,6 +205,11 @@ class ReactNativeFeatureFlags {
    * Dispatches state updates for content offset changes synchronously on the main thread.
    */
   RN_EXPORT static bool enableImmediateUpdateModeForContentOffsetChanges();
+
+  /**
+   * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
+   */
+  RN_EXPORT static bool enableImperativeEvents();
 
   /**
    * Enable ref.focus() and ref.blur() for all views, not just TextInput.
@@ -255,14 +272,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enablePropsUpdateReconciliationAndroid();
 
   /**
-   * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.
+   * Enables the ResizeObserver Web API in React Native.
    */
-  RN_EXPORT static bool enableRuntimeSchedulerQueueClearingOnError();
-
-  /**
-   * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).
-   */
-  RN_EXPORT static bool enableSchedulerDelegateInvalidation();
+  RN_EXPORT static bool enableResizeObserverByDefault();
 
   /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.
@@ -303,11 +315,6 @@ class ReactNativeFeatureFlags {
    * Enables the experimental version of `VirtualViewContainerState`.
    */
   RN_EXPORT static bool enableVirtualViewContainerStateExperimental();
-
-  /**
-   * Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.
-   */
-  RN_EXPORT static bool fixDifferentiatorParentTagForUnflattenCase();
 
   /**
    * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.

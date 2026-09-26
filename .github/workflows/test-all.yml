@@ -88,6 +88,7 @@ jobs:
             debugger_shell:
               - 'packages/debugger-shell/**'
               - 'scripts/debugger-shell/**'
+
   prebuild_apple_dependencies:
     needs: check_code_changes
     if: |
@@ -163,8 +164,9 @@ jobs:
           flavor: ${{ matrix.flavor }}
 
   test_maestro_cloud_ios:
-    name: Maestro Cloud iOS RNTester
     needs: test_ios_rntester
+    # test_ios_rntester is continue-on-error. If its Release artifact is missing,
+    # the reusable workflow fails explicitly while downloading or validating it.
     if: |
       needs.test_ios_rntester.result == 'success' &&
       (
@@ -175,41 +177,17 @@ jobs:
           github.actor != 'dependabot[bot]'
         )
       )
-    runs-on: ubuntu-latest
-    timeout-minutes: 75
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Download RNTester app
-        uses: actions/download-artifact@v7
-        with:
-          name: RNTesterApp-NewArch-Release
-          path: /tmp/RNTesterBuild/RNTester.app
-      - name: Validate Maestro Cloud inputs
-        env:
-          MAESTRO_CLOUD_API_KEY: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          MAESTRO_CLOUD_PROJECT_ID: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
-        run: |
-          test -n "$MAESTRO_CLOUD_API_KEY"
-          test -n "$MAESTRO_CLOUD_PROJECT_ID"
-          test -d /tmp/RNTesterBuild/RNTester.app
-          test -z "$(find packages/rn-tester/.maestro -type l -print -quit)"
-      - name: Run flows on Maestro Cloud
-        uses: mobile-dev-inc/action-maestro-cloud@5759506b4ec7ee0a1ece4b7e6574bba2b282f241 # v3.0.1
-        with:
-          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
-          app-file: /tmp/RNTesterBuild/RNTester.app
-          workspace: packages/rn-tester/.maestro
-          branch: ${{ github.head_ref || github.ref_name }}
-          name: RNTester iOS - ${{ github.event.pull_request.title || github.event.head_commit.message }}
-          exclude-tags: android-only
-          env: |
-            APP_ID=com.meta.RNTester.localDevelopment
-          maestro-cli-version: 2.6.1
-          timeout: 60
+    uses: ./.github/workflows/maestro-cloud-rntester.yml
+    with:
+      platform: iOS
+      artifact-name: RNTesterApp-NewArch-Release
+      download-path: /tmp/RNTesterBuild/RNTester.app
+      app-file: /tmp/RNTesterBuild/RNTester.app
+      app-id: com.meta.RNTester.localDevelopment
+      device-model: iPhone-17-Pro
+      device-os: iOS-26-2
+      exclude-tags: android-only,local-screenshot-baseline
+    secrets: inherit
 
   test_e2e_ios_rntester:
     needs: test_ios_rntester
@@ -285,9 +263,15 @@ jobs:
     uses: ./.github/workflows/test-ios-spm-newapp.yml
     secrets: inherit
 
-  test_e2e_android_templateapp:
+  build_android_templateapp:
     needs: [build_npm_package, build_android]
     if: ${{ always() && needs.build_android.result == 'success' && needs.build_npm_package.result == 'success' }}
+    uses: ./.github/workflows/build-android-templateapp.yml
+    secrets: inherit
+
+  test_e2e_android_templateapp:
+    needs: build_android_templateapp
+    if: ${{ needs.build_android_templateapp.result == 'success' }}
     uses: ./.github/workflows/e2e-android-templateapp.yml
     secrets: inherit
 
@@ -295,6 +279,8 @@ jobs:
     needs: test_e2e_android_templateapp
     if: ${{ always() && needs.test_e2e_android_templateapp.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-android-templateapp.yml
+    with:
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_android_templateapp_retry_2:
@@ -303,6 +289,7 @@ jobs:
     uses: ./.github/workflows/e2e-android-templateapp.yml
     with:
       fail-on-error: true
+      retry-attempt: 2
     secrets: inherit
 
   build_fantom_runner:
@@ -375,7 +362,6 @@ jobs:
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   test_maestro_cloud_android:
-    name: Maestro Cloud Android RNTester
     needs: build_android
     if: |
       needs.build_android.result == 'success' &&
@@ -387,40 +373,15 @@ jobs:
           github.actor != 'dependabot[bot]'
         )
       )
-    runs-on: ubuntu-latest
-    timeout-minutes: 75
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Download RNTester APK
-        uses: actions/download-artifact@v7
-        with:
-          name: rntester-release
-          path: /tmp/rntester-android
-      - name: Validate Maestro Cloud inputs
-        env:
-          MAESTRO_CLOUD_API_KEY: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          MAESTRO_CLOUD_PROJECT_ID: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
-        run: |
-          test -n "$MAESTRO_CLOUD_API_KEY"
-          test -n "$MAESTRO_CLOUD_PROJECT_ID"
-          test -f /tmp/rntester-android/app-x86-release.apk
-          test -z "$(find packages/rn-tester/.maestro -type l -print -quit)"
-      - name: Run flows on Maestro Cloud
-        uses: mobile-dev-inc/action-maestro-cloud@5759506b4ec7ee0a1ece4b7e6574bba2b282f241 # v3.0.1
-        with:
-          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
-          project-id: ${{ vars.MAESTRO_CLOUD_PROJECT_ID }}
-          app-file: /tmp/rntester-android/app-x86-release.apk
-          workspace: packages/rn-tester/.maestro
-          branch: ${{ github.head_ref || github.ref_name }}
-          name: RNTester Android - ${{ github.event.pull_request.title || github.event.head_commit.message }}
-          env: |
-            APP_ID=com.facebook.react.uiapp
-          maestro-cli-version: 2.6.1
-          timeout: 60
+    uses: ./.github/workflows/maestro-cloud-rntester.yml
+    with:
+      platform: Android
+      artifact-name: rntester-release
+      download-path: /tmp/rntester-android
+      app-file: /tmp/rntester-android/app-arm64-v8a-release.apk
+      app-id: com.facebook.react.uiapp
+      exclude-tags: ios-only,local-screenshot-baseline
+    secrets: inherit
 
   test_e2e_android_rntester:
     needs: build_android
@@ -432,6 +393,8 @@ jobs:
     needs: test_e2e_android_rntester
     if: ${{ always() && needs.test_e2e_android_rntester.outputs.status == 'failure' }}
     uses: ./.github/workflows/e2e-android-rntester.yml
+    with:
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_android_rntester_retry_2:
@@ -440,6 +403,7 @@ jobs:
     uses: ./.github/workflows/e2e-android-rntester.yml
     with:
       fail-on-error: true
+      retry-attempt: 2
     secrets: inherit
 
   build_npm_package:
@@ -538,7 +502,7 @@ jobs:
           fi
           yarn build android "${args[@]}" -P reactNativeArchitectures="$TARGET_ARCHITECTURE" -P react.internal.mavenLocalRepo="/tmp/maven-local"
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: ./.github/actions/upload-artifact
         with:
           name: helloworld-apk-${{ matrix.flavor }}-NewArch-hermes
           path: ./private/helloworld/android/app/build/outputs/apk/
@@ -595,9 +559,6 @@ jobs:
       - name: Run shellcheck
         shell: bash
         run: ./.github/workflow-scripts/analyze_scripts.sh
-      - name: Prettier
-        shell: bash
-        run: yarn run format-check
       - name: markdownlint
         shell: bash
         run: yarn run lint-markdown

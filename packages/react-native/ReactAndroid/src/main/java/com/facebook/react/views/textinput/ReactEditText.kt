@@ -614,6 +614,8 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     }
     wasMultiline = isMultiline
 
+    updatePlaceholderEllipsize()
+
     // We override the KeyListener so that all keys on the soft input keyboard as well as hardware
     // keyboards work. Some KeyListeners like DigitsKeyListener will display the keyboard but not
     // accept all input from it
@@ -629,6 +631,16 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       this.placeholder = placeholder
       hint = placeholder
     }
+    updatePlaceholderEllipsize()
+  }
+
+  private fun updatePlaceholderEllipsize() {
+    ellipsize =
+        if (!isMultiline) {
+          TextUtils.TruncateAt.END
+        } else {
+          null
+        }
   }
 
   public fun setFontFamily(fontFamily: String?) {
@@ -677,6 +689,10 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     val newTypeface = applyStyles(typeface, fontStyle, fontWeight, fontFamily, context.assets)
     typeface = newTypeface
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      // TextView skips unchanged settings even after a typeface change, so clear them first.
+      if (getFontVariationSettings() != null && parsedFontVariationSettings != null) {
+        super.setFontVariationSettings(null)
+      }
       super.setFontVariationSettings(parsedFontVariationSettings)
     }
 
@@ -1307,7 +1323,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
      */
     override fun getInputType() = _inputType
 
-    public fun setInputType(inputType: Int) {
+    fun setInputType(inputType: Int) {
       _inputType = inputType
     }
 

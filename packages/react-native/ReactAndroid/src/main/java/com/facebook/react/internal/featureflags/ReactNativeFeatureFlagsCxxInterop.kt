@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1ef72233f02973021b83bd2e2aa1f69b>>
+ * @generated SignedSource<<427c98d364e8a0aec3a0834b6a8117c8>>
  */
 
 /**
@@ -52,11 +52,13 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableAndroidFontWeightAdjustment(): Boolean
+  @DoNotStrip @JvmStatic public external fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableAndroidTextMeasurementOptimizations(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableBridgelessArchitecture(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableBufferedCallInvoker(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableCppPropsIteratorSetter(): Boolean
 
@@ -71,6 +73,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableExclusivePropsUpdateAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableFabricCommitBranching(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableFabricCommitBranchingMergeOnMainThread(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableFabricLogs(): Boolean
 
@@ -89,6 +93,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableImageTransparentTintColor(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableImperativeEvents(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImperativeFocus(): Boolean
 
@@ -114,9 +120,7 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enablePropsUpdateReconciliationAndroid(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableRuntimeSchedulerQueueClearingOnError(): Boolean
-
-  @DoNotStrip @JvmStatic public external fun enableSchedulerDelegateInvalidation(): Boolean
+  @DoNotStrip @JvmStatic public external fun enableResizeObserverByDefault(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableSwiftUIBasedFilters(): Boolean
 
@@ -133,8 +137,6 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableViewRecyclingForView(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableVirtualViewContainerStateExperimental(): Boolean
-
-  @DoNotStrip @JvmStatic public external fun fixDifferentiatorParentTagForUnflattenCase(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
 

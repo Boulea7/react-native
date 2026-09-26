@@ -31,12 +31,42 @@ const PODS = PLAIN.replace(
   'AA0000000000000000000901 /* Debug */ = {\n\t\t\tisa = XCBuildConfiguration;\n\t\t\tbaseConfigurationReference = BB0000000000000000000001 /* Pods-MyApp.debug.xcconfig */;\n\t\t\tbuildSettings = {',
 );
 
-const RN_PATH = '../node_modules/react-native';
+// The app target's two XCBuildConfiguration UUIDs in the fixture.
+const APP_DEBUG_CONFIG = 'AA0000000000000000000901';
+const APP_RELEASE_CONFIG = 'AA00000000000000000000A2';
 
-// Absolute, mirroring resolveHermesCliPathSetting (a `..`-relative path through
-// a symlinked react-native would resolve to the wrong dir at build time).
-const TEST_HERMES_CLI_PATH =
-  '/abs/node_modules/hermes-compiler/hermesc/osx-bin/hermesc';
+const DEBUG_CONFIG_HEAD =
+  'AA0000000000000000000901 /* Debug */ = {\n\t\t\tisa = XCBuildConfiguration;\n\t\t\tbuildSettings = {';
+
+// Seed the app target's Debug config with a SWIFT_ACTIVE_COMPILATION_CONDITIONS
+// the user already had, in the scalar form Xcode and the app template write.
+function withDebugCondition(text, value) {
+  return text.replace(
+    DEBUG_CONFIG_HEAD,
+    `${DEBUG_CONFIG_HEAD}\n\t\t\t\tSWIFT_ACTIVE_COMPILATION_CONDITIONS = ${value};`,
+  );
+}
+
+// One XCBuildConfiguration's buildSettings dict, by config UUID. Build settings
+// hold only scalars and `( … )` arrays, so the first `};` closes the dict.
+function buildSettingsOf(text, configUuid) {
+  const open = text.indexOf(
+    'buildSettings = {',
+    text.indexOf(`${configUuid} /*`),
+  );
+  return text.slice(open, text.indexOf('};', open));
+}
+// Derive a variant whose app-target configs already carry HEADER_SEARCH_PATHS,
+// set to any valid pbxproj value: a plain scalar (which injection promotes to an
+// array) or an array injection appends to.
+function withHeaderSearchPaths(value) {
+  return PLAIN.replaceAll(
+    'PRODUCT_BUNDLE_IDENTIFIER = com.example.MyApp;',
+    `HEADER_SEARCH_PATHS = ${value};\n\t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.example.MyApp;`,
+  );
+}
+
+const RN_PATH = '../node_modules/react-native';
 const TEST_FRAMEWORKS = [
   {
     id: 'react',
@@ -69,7 +99,10 @@ const TEST_FRAMEWORKS = [
 function inject(
   text,
   remote = null,
-  hermesCliPath = TEST_HERMES_CLI_PATH,
+  // Dead positional slot: injectSpmIntoPbxproj no longer takes a hermesCliPath
+  // (see the HERMES_CLI_PATH test below). Kept so the call sites below, which
+  // pass it as `null`, stay untouched.
+  _hermesCliPath = null,
   generatedSources = [],
   scriptPhases = [],
 ) {
@@ -86,7 +119,6 @@ function inject(
     },
     RN_PATH,
     remote,
-    hermesCliPath,
     generatedSources,
     TEST_FRAMEWORKS,
     scriptPhases,
@@ -202,10 +234,6 @@ describe('injectSpmIntoPbxproj — Tier 2 (build settings + phase)', () => {
     expect(text.match(/CLANG_CXX_LANGUAGE_STANDARD = "c\+\+20"/g)).toHaveLength(
       2,
     );
-    // HERMES_CLI_PATH points react-native-xcode.sh at the hermes-compiler npm
-    // package (no hermes-engine pod under SPM), injected into both configs.
-    expect(text.match(/HERMES_CLI_PATH = /g)).toHaveLength(2);
-    expect(text).toContain(TEST_HERMES_CLI_PATH);
     expect(text).toContain('RN_SPM_FLAVOR = debug');
     expect(text).toContain('RN_SPM_FLAVOR = release');
     expect(text).toContain('RN_SPM_REACT_BINARY[sdk=iphoneos*]');
@@ -213,9 +241,49 @@ describe('injectSpmIntoPbxproj — Tier 2 (build settings + phase)', () => {
     expect(text).toContain('$(RN_SPM_REACT_BINARY)');
   });
 
-  it('omits HERMES_CLI_PATH when hermesc could not be resolved', () => {
-    const {text} = inject(PLAIN, null, null);
+  // An absolute hermesc path is machine-specific, and the app commits its
+  // project.pbxproj. react-native-xcode.sh resolves hermesc through
+  // react-native's own dependency graph at build time instead.
+  it('never writes HERMES_CLI_PATH into either configuration', () => {
+    const {text, buildSettingChanges} = inject(PLAIN);
     expect(text).not.toContain('HERMES_CLI_PATH');
+    expect(
+      buildSettingChanges.flatMap(change => change.createdScalars ?? []),
+    ).not.toContain('HERMES_CLI_PATH');
+  });
+
+  // Swift's `#if DEBUG` — which AppDelegate.swift's bundleURL() uses to pick the
+  // Metro URL — is gated by this setting alone. CocoaPods injects it at `pod
+  // install`; an SPM app has to get it here or a Debug build looks for a
+  // main.jsbundle it never built.
+  it('sets SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG on the debug config only', () => {
+    const {text} = inject(PLAIN);
+    const debugSettings = buildSettingsOf(text, APP_DEBUG_CONFIG);
+    expect(debugSettings).toMatch(
+      /SWIFT_ACTIVE_COMPILATION_CONDITIONS = \(\s*"\$\(inherited\)",\s*DEBUG,\s*\)/,
+    );
+    expect(buildSettingsOf(text, APP_RELEASE_CONFIG)).not.toContain(
+      'SWIFT_ACTIVE_COMPILATION_CONDITIONS',
+    );
+  });
+
+  it('leaves a config that already sets DEBUG (scalar form) untouched', () => {
+    const {text} = inject(withDebugCondition(PLAIN, '"$(inherited) DEBUG"'));
+    // Not promoted to an array, not re-appended — DEBUG is already there.
+    expect(buildSettingsOf(text, APP_DEBUG_CONFIG)).toContain(
+      'SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";',
+    );
+    expect(text.match(/\bDEBUG\b/g)).toHaveLength(1);
+  });
+
+  it("adds DEBUG alongside the user's own compilation conditions", () => {
+    const {text} = inject(
+      withDebugCondition(PLAIN, '"$(inherited) MY_DEBUG_UI"'),
+    );
+    // MY_DEBUG_UI must not be mistaken for DEBUG by a substring check.
+    const debugSettings = buildSettingsOf(text, APP_DEBUG_CONFIG);
+    expect(debugSettings).toContain('"$(inherited) MY_DEBUG_UI"');
+    expect(debugSettings).toMatch(/^\s*DEBUG,$/m);
   });
 
   it('prepends the Sync SPM Autolinking build phase', () => {
@@ -227,6 +295,79 @@ describe('injectSpmIntoPbxproj — Tier 2 (build settings + phase)', () => {
     const sourcesIdx = text.indexOf('Sources */,');
     expect(syncIdx).toBeGreaterThan(-1);
     expect(syncIdx).toBeLessThan(sourcesIdx);
+  });
+
+  it('runs every injected shell-script build phase under bash, not /bin/sh', () => {
+    // Their bodies start with `set -euo pipefail`, which a non-bash /bin/sh
+    // (e.g. dash) rejects at runtime.
+    const {text} = inject(PLAIN);
+    const phaseCount = text.match(/isa = PBXShellScriptBuildPhase;/g)?.length;
+    const bashCount = text.match(/shellPath = \/bin\/bash;/g)?.length;
+    expect(phaseCount).toBeGreaterThan(0);
+    expect(bashCount).toBe(phaseCount);
+  });
+
+  it('upgrades an already-injected phase from /bin/sh to bash on re-run', () => {
+    // A project injected before this fix recorded `shellPath = /bin/sh;` on
+    // the Sync SPM Autolinking phase. Re-running inject (e.g. `spm update`)
+    // must refresh it in place, not just apply bash to newly-created phases.
+    const {text: firstText} = inject(PLAIN);
+    const downgraded = firstText.replace(
+      /shellPath = \/bin\/bash;/g,
+      'shellPath = /bin/sh;',
+    );
+    const {text: secondText} = inject(downgraded);
+    expect(secondText).not.toContain('shellPath = /bin/sh;');
+    const phaseCount = secondText.match(
+      /isa = PBXShellScriptBuildPhase;/g,
+    )?.length;
+    expect(secondText.match(/shellPath = \/bin\/bash;/g)?.length).toBe(
+      phaseCount,
+    );
+  });
+
+  it.each([
+    [
+      '"$(inherited)"',
+      ['"$(inherited)"', '"$(SRCROOT)/build/generated/autolinking/headers"'],
+    ],
+    [
+      '"$(inherited) $(SRCROOT)/vendor/include"',
+      [
+        '"$(inherited)"',
+        '"$(inherited) $(SRCROOT)/vendor/include"',
+        '"$(SRCROOT)/build/generated/autolinking/headers"',
+      ],
+    ],
+  ])(
+    'promotes a pre-existing HEADER_SEARCH_PATHS scalar (%s) to an array, keeping its value and one $(inherited)',
+    (scalar, expectedMembers) => {
+      const {text} = inject(withHeaderSearchPaths(scalar));
+      const arrays = [
+        ...text.matchAll(/HEADER_SEARCH_PATHS = \(\n([\s\S]*?)\t+\);/g),
+      ].map(m =>
+        m[1]
+          .split('\n')
+          .map(line => line.trim().replace(/,$/, ''))
+          .filter(member => member.length > 0),
+      );
+      // Both app-target configs (Debug + Release).
+      expect(arrays).toEqual([expectedMembers, expectedMembers]);
+    },
+  );
+
+  it('appends to a pre-existing ONE-LINE HEADER_SEARCH_PATHS array in place', () => {
+    const {text} = inject(withHeaderSearchPaths('("$(inherited)", )'));
+    expect(isBalanced(text)).toBe(true);
+    const arrays = [
+      ...text.matchAll(/HEADER_SEARCH_PATHS = \(([^\n]*)\);/g),
+    ].map(m => m[1]);
+    // Both app-target configs, each keeping the one-line shape it was written in.
+    expect(arrays).toEqual(
+      Array(2).fill(
+        '"$(inherited)", "$(SRCROOT)/build/generated/autolinking/headers", ',
+      ),
+    );
   });
 
   it('adds one generated embed phase immediately after Frameworks', () => {
@@ -306,7 +447,6 @@ describe('injectSpmIntoPbxproj — Tier 3 (plugin generated sources)', () => {
       },
       RN_PATH,
       null,
-      null,
       [PROVIDER_SOURCE],
       TEST_FRAMEWORKS,
     ).text;
@@ -345,7 +485,6 @@ describe('injectSpmIntoPbxproj — Tier 3 (plugin generated sources)', () => {
         sourcesPhaseUuid: plan.sourcesPhaseUuid,
       },
       RN_PATH,
-      null,
       null,
       [PROVIDER_SOURCE],
       TEST_FRAMEWORKS,
@@ -991,7 +1130,6 @@ describe('injectSpmIntoPbxproj — invariants', () => {
       },
       RN_PATH,
       null,
-      null,
       [],
       TEST_FRAMEWORKS,
     ).text;
@@ -1031,7 +1169,6 @@ describe('injectSpmIntoPbxproj — invariants', () => {
         frameworksPhaseUuid: plan.frameworksPhaseUuid,
       },
       RN_PATH,
-      null,
       null,
       [],
       TEST_FRAMEWORKS,

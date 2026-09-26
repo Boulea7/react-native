@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<721fb68d3038841ecd6bbaabafccd5cc>>
+ * @generated SignedSource<<7b46c51af70a529d0d1260906cef2ade>>
  * @flow strict
  * @noformat
  */
@@ -37,9 +37,10 @@ export interface Spec extends TurboModule {
   readonly disableViewPreallocationAndroid?: () => boolean;
   readonly enableAccessibilityOrder?: () => boolean;
   readonly enableAccumulatedUpdatesInRawPropsAndroid?: () => boolean;
-  readonly enableAndroidFontWeightAdjustment?: () => boolean;
+  readonly enableAndroidAutoOffscreenCompositingForElevation?: () => boolean;
   readonly enableAndroidTextMeasurementOptimizations?: () => boolean;
   readonly enableBridgelessArchitecture?: () => boolean;
+  readonly enableBufferedCallInvoker?: () => boolean;
   readonly enableCppPropsIteratorSetter?: () => boolean;
   readonly enableCustomFocusSearchOnClippedElementsAndroid?: () => boolean;
   readonly enableDestroyShadowTreeRevisionAsync?: () => boolean;
@@ -47,6 +48,7 @@ export interface Spec extends TurboModule {
   readonly enableEagerRootViewAttachment?: () => boolean;
   readonly enableExclusivePropsUpdateAndroid?: () => boolean;
   readonly enableFabricCommitBranching?: () => boolean;
+  readonly enableFabricCommitBranchingMergeOnMainThread?: () => boolean;
   readonly enableFabricLogs?: () => boolean;
   readonly enableFlexboxAutoMinSizeInStrictMode?: () => boolean;
   readonly enableFontScaleChangesUpdatingLayout?: () => boolean;
@@ -56,6 +58,7 @@ export interface Spec extends TurboModule {
   readonly enableImagePrefetchingAndroid?: () => boolean;
   readonly enableImageTransparentTintColor?: () => boolean;
   readonly enableImmediateUpdateModeForContentOffsetChanges?: () => boolean;
+  readonly enableImperativeEvents?: () => boolean;
   readonly enableImperativeFocus?: () => boolean;
   readonly enableInteropViewManagerClassLookUpOptimizationIOS?: () => boolean;
   readonly enableIntersectionObserverByDefault?: () => boolean;
@@ -68,8 +71,7 @@ export interface Spec extends TurboModule {
   readonly enableNativeCSSParsing?: () => boolean;
   readonly enablePreparedTextLayout?: () => boolean;
   readonly enablePropsUpdateReconciliationAndroid?: () => boolean;
-  readonly enableRuntimeSchedulerQueueClearingOnError?: () => boolean;
-  readonly enableSchedulerDelegateInvalidation?: () => boolean;
+  readonly enableResizeObserverByDefault?: () => boolean;
   readonly enableSwiftUIBasedFilters?: () => boolean;
   readonly enableViewCulling?: () => boolean;
   readonly enableViewRecycling?: () => boolean;
@@ -78,7 +80,6 @@ export interface Spec extends TurboModule {
   readonly enableViewRecyclingForText?: () => boolean;
   readonly enableViewRecyclingForView?: () => boolean;
   readonly enableVirtualViewContainerStateExperimental?: () => boolean;
-  readonly fixDifferentiatorParentTagForUnflattenCase?: () => boolean;
   readonly fixMappingOfEventPrioritiesBetweenFabricAndReact?: () => boolean;
   readonly fixYogaFlexBasisFitContentInMainAxis?: () => boolean;
   readonly fuseboxAssertSingleHostState?: () => boolean;

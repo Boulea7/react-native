@@ -255,15 +255,18 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
         childComponentView,
         @(index),
         @([childComponentView.superview tag]));
+#ifndef NS_BLOCK_ASSERTIONS
+    NSArray<UIView *> *containerSubviews = self.currentContainerView.subviews;
+    BOOL isIndexInBounds = index >= 0 && (NSUInteger)index < containerSubviews.count;
     RCTAssert(
-        (self.currentContainerView.subviews.count > index) &&
-            [self.currentContainerView.subviews objectAtIndex:index] == childComponentView,
+        isIndexInBounds && [containerSubviews objectAtIndex:index] == childComponentView,
         @"Attempt to unmount a view which has a different index. (parent: %@, child: %@, index: %@, actual index: %@, tag at index: %@)",
         self,
         childComponentView,
         @(index),
-        @([self.currentContainerView.subviews indexOfObject:childComponentView]),
-        @([[self.currentContainerView.subviews objectAtIndex:index] tag]));
+        @([containerSubviews indexOfObject:childComponentView]),
+        isIndexInBounds ? @([[containerSubviews objectAtIndex:index] tag]) : @"out of bounds");
+#endif
   }
 
   [childComponentView removeFromSuperview];
@@ -754,7 +757,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
 
   // Clean up box shadow layers to prevent cross-component contamination
   if (_boxShadowLayers != nullptr) {
-    for (CALayer *boxShadowLayer = nullptr in _boxShadowLayers) {
+    for (CALayer *boxShadowLayer in _boxShadowLayers) {
       [boxShadowLayer removeFromSuperlayer];
     }
     [_boxShadowLayers removeAllObjects];
@@ -814,7 +817,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
     return nil;
   }
 
-  for (UIView *subview = nullptr in [currentContainerView.subviews reverseObjectEnumerator]) {
+  for (UIView *subview in [currentContainerView.subviews reverseObjectEnumerator]) {
     UIView *hitView = [subview hitTest:[subview convertPoint:point fromView:currentContainerView] withEvent:event];
     if (hitView) {
       return hitView;
@@ -972,7 +975,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     if (_swiftUIWrapper == nullptr) {
       _swiftUIWrapper = [RCTSwiftUIContainerViewWrapper new];
       UIView *swiftUIContentView = [[UIView alloc] init];
-      for (UIView *subview = nullptr in self.subviews) {
+      for (UIView *subview in self.subviews) {
         [swiftUIContentView addSubview:subview];
       }
       swiftUIContentView.clipsToBounds = self.clipsToBounds;
@@ -990,7 +993,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   } else {
     if (_swiftUIWrapper != nullptr) {
       UIView *swiftUIContentView = _swiftUIWrapper.contentView;
-      for (UIView *subview = nullptr in swiftUIContentView.subviews) {
+      for (UIView *subview in swiftUIContentView.subviews) {
         [self addSubview:subview];
       }
       self.clipsToBounds = swiftUIContentView.clipsToBounds;
@@ -1016,7 +1019,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   if (_useCustomContainerView) {
     if (!_containerView) {
       _containerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height)];
-      for (UIView *subview = nullptr in effectiveContentView.subviews) {
+      for (UIView *subview in effectiveContentView.subviews) {
         [_containerView addSubview:subview];
       }
       _containerView.clipsToBounds = effectiveContentView.clipsToBounds;
@@ -1188,7 +1191,10 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     _outlineLayer.frame = CGRectInset(
         layer.bounds, -_props->outlineOffset - _props->outlineWidth, -_props->outlineOffset - _props->outlineWidth);
 
-    if (areBorderRadiiCircular(borderMetrics.borderRadii) && borderMetrics.borderRadii.topLeft.horizontal == 0) {
+    // Core Animation can only draw solid contours, so dotted and dashed outlines
+    // have to be drawn with Core Graphics, the same way non-solid borders are.
+    if (_props->outlineStyle == OutlineStyle::Solid && areBorderRadiiCircular(borderMetrics.borderRadii) &&
+        borderMetrics.borderRadii.topLeft.horizontal == 0) {
       UIColor *outlineColor = RCTUIColorFromSharedColor(_props->outlineColor);
       _outlineLayer.borderWidth = _props->outlineWidth;
       _outlineLayer.borderColor = outlineColor.CGColor;
@@ -1740,7 +1746,13 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
 
 - (BOOL)styleNeedsSwiftUIContainer
 {
-  if (!_props->filter.empty()) {
+  if (_props->filter.empty()) {
+    return NO;
+  }
+
+  // A filter must not affect layout, but UIHostingController insets its content by the safe area.
+  // To disable the insets we use `safeAreaRegions` which is only available in iOS 16.4 and tvOS 16.4.
+  if (@available(iOS 16.4, tvOS 16.4, *)) {
     for (const auto &primitive : _props->filter) {
       if (primitive.type == FilterType::Blur || primitive.type == FilterType::Grayscale ||
           primitive.type == FilterType::DropShadow || primitive.type == FilterType::Saturate ||
@@ -1749,6 +1761,7 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
       }
     }
   }
+
   return NO;
 }
 
@@ -1792,10 +1805,10 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
   if (_filterLayer != nullptr) {
     [destinationView.layer addSublayer:_filterLayer];
   }
-  for (CALayer *layer = nullptr in _backgroundImageLayers) {
+  for (CALayer *layer in _backgroundImageLayers) {
     [destinationView.layer addSublayer:layer];
   }
-  for (CALayer *layer = nullptr in _boxShadowLayers) {
+  for (CALayer *layer in _boxShadowLayers) {
     [destinationView.layer addSublayer:layer];
   }
 }
@@ -1844,7 +1857,6 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
 - (void)focus
 {
   UIView *viewToFocus = [self viewToFocus];
-  [viewToFocus becomeFirstResponder];
 
 #if TARGET_OS_TV
   RCTSurfaceHostingProxyRootView *rootView = [self containingRootView];
@@ -1855,6 +1867,8 @@ static NSString *RCTRecursiveAccessibilityLabel(UIView *view)
   rootView.reactPreferredFocusedView = viewToFocus;
   [rootView setNeedsFocusUpdate];
   [rootView updateFocusIfNeeded];
+#else
+  [viewToFocus becomeFirstResponder];
 #endif
 }
 

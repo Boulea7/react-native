@@ -9,6 +9,7 @@
  */
 
 /*::
+import type {SwiftpmNameOutcome} from './swiftpm-config';
 export type SetupArgs = {
   action: 'add' | 'update' | 'deinit' | 'sync' | 'codegen' | 'download' | 'scaffold' | null,
   version: string | null,
@@ -66,6 +67,8 @@ export type AutolinkingArgs = {
   autolinkingJson: string | null,
   output: string | null,
   xcframeworksPath: string | null,
+  // Platform floor of every manifest this run writes; sanitized by parseArgs.
+  iosDeploymentTarget: string,
 };
 
 export type SpmTarget = {
@@ -143,13 +146,19 @@ export type AutolinkedDep = {
   name: string,
   root: string,
   platforms: {ios: AutolinkingIosPlatform, ...},
-  // Resolved Swift target / module / headers-subdir name. Defaults to
-  // toSwiftName(name) and is overridden by the dep's react-native.config.js
-  // `spm.name`. Populated by expandSpmDependencies — always present after
-  // expansion; optional in the type so caller-side construction stays simple.
+  // Resolved Swift target / module / headers-subdir name — the name the library
+  // declares in `swiftpmConfig`, else its podspec's (see resolveSwiftName).
+  // Populated by expandSpmDependencies — always present after expansion;
+  // optional in the type so caller-side construction stays simple.
   swiftName?: string,
-  // Populated by expandSpmDependencies from each dep's
-  // react-native.config.js `spm.dependencies` array.
+  // Where swiftName came from. Only a podspec-derived name is safe for the
+  // scaffolder to record in the library's package.json.
+  swiftNameSource?: 'config' | 'podspec' | 'npm',
+  // Which podspec field named it ('podspec' source only), so `spm scaffold` can
+  // report the choice it made between `header_dir` and `module_name`.
+  swiftNamePodspecKey?: 'header_dir' | 'module_name' | 'name',
+  // Populated by expandSpmDependencies from each dep's declared
+  // `dependencies` array.
   spmDependencies?: Array<string>,
   ...
 };
@@ -168,7 +177,6 @@ export type SpmModuleConfig = {
   name: string,
   path: string,
   exclude?: Array<string>,
-  publicHeadersPath?: ?string,
   // Optional CocoaPods-style glob allowlist (analog of s.source_files).
   // When set, replaces auto source discovery for the module — only files
   // matching one of these patterns are passed to SPM via `sources:`.
@@ -200,6 +208,7 @@ export type AggregatorInput = {
   // the aggregator's package deps + the AutolinkedAggregate target deps.
   pluginPackageDeps?: ReadonlyArray<PluginPackageDep>,
   pluginProductDeps?: ReadonlyArray<PluginProductDep>,
+  iosDeploymentTarget?: ?string,
 };
 
 // --- Autolinking plugins (PREVIEW / unstable contract) ---
@@ -371,6 +380,7 @@ export type SynthPackageSpec = {
   // `<react/renderer/components/safeareacontext/X.h>` resolve through the
   // dep's own `common/cpp/` subtree.
   headerSearchPaths?: ?Array<string>,
+  iosDeploymentTarget?: ?string,
 };
 
 
@@ -423,6 +433,10 @@ export type PodspecModel = {
   // physical source tree (SPM has no header_mappings_dir copy step).
   headerMappingsDirs: Array<string>,
   headerDir: ?string,
+  // What CocoaPods compiles the module as, and so what Swift and `@import`
+  // consumers spell (`s.module_name`). Defaults to the pod name in CocoaPods;
+  // null here when the podspec does not declare it.
+  moduleName: ?string,
   frameworks: Array<string>,
   weakFrameworks: Array<string>,
   libraries: Array<string>,
@@ -463,8 +477,7 @@ export type PodspecModel = {
 // Decouples podspec reading from SPM-specific shaping so each side can be
 // tested in isolation.
 export type SpmScaffoldSpec = {
-  // Swift target / module name. Default: toSwiftName(podspec.name); overridden
-  // by `header_dir` when present.
+  // Swift target / module name, as resolved by expandSpmDependencies.
   swiftName: string,
   // Source file paths relative to the dep root, ready for `sources: [...]`
   // emission after the `root/` wrapper-dir prefix is applied at emit time.
@@ -482,10 +495,13 @@ export type SpmScaffoldSpec = {
   // Bucketed dependency references — pre-computed by the translation layer.
   // `coreReactNative` is true when ANY React-* / RCT* / RCT-Folly / glog
   // dep is present (so we add React's invariant header products).
-  // `siblingNames` are npm names that match other autolinked deps — resolved
-  // to Swift names by the scaffold orchestrator before emit.
+  // `siblingNames` are npm names that match other autolinked deps.
+  // `siblingSwiftNames` carries each one's resolved Swift name (honoring the
+  // sibling's `spm.name`); a sibling absent from it falls back to
+  // toSwiftName(npmName) at emit time.
   coreReactNative: boolean,
   siblingNames: Array<string>,
+  siblingSwiftNames?: {[npmName: string]: string},
   // Extra frameworks beyond the autolinker's default UIKit/Foundation/CoreGraphics
   // set. Merged with the defaults at emit time.
   extraFrameworks: Array<string>,
@@ -520,6 +536,9 @@ export type ScaffoldResult =
       // changed, --force, etc.); false on first-time scaffolds. The CLI
       // orchestrator prompts only for first-time scaffolds.
       previouslyExisted: boolean,
+      // What became of `swiftpmConfig.name` in the library's package.json.
+      // Absent when the name was not podspec-derived, so nothing was attempted.
+      swiftpmName?: SwiftpmNameOutcome,
     }
   | {
       depName: string,

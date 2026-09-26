@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1a1d47f2d85404c776e55db40f7dbc6e>>
+ * @generated SignedSource<<ac56780559e180d552086f3c53a1f111>>
  */
 
 /**
@@ -47,11 +47,13 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
 
-  @DoNotStrip public fun enableAndroidFontWeightAdjustment(): Boolean
+  @DoNotStrip public fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean
 
   @DoNotStrip public fun enableAndroidTextMeasurementOptimizations(): Boolean
 
   @DoNotStrip public fun enableBridgelessArchitecture(): Boolean
+
+  @DoNotStrip public fun enableBufferedCallInvoker(): Boolean
 
   @DoNotStrip public fun enableCppPropsIteratorSetter(): Boolean
 
@@ -66,6 +68,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableExclusivePropsUpdateAndroid(): Boolean
 
   @DoNotStrip public fun enableFabricCommitBranching(): Boolean
+
+  @DoNotStrip public fun enableFabricCommitBranchingMergeOnMainThread(): Boolean
 
   @DoNotStrip public fun enableFabricLogs(): Boolean
 
@@ -84,6 +88,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableImageTransparentTintColor(): Boolean
 
   @DoNotStrip public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
+
+  @DoNotStrip public fun enableImperativeEvents(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
 
@@ -109,9 +115,7 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enablePropsUpdateReconciliationAndroid(): Boolean
 
-  @DoNotStrip public fun enableRuntimeSchedulerQueueClearingOnError(): Boolean
-
-  @DoNotStrip public fun enableSchedulerDelegateInvalidation(): Boolean
+  @DoNotStrip public fun enableResizeObserverByDefault(): Boolean
 
   @DoNotStrip public fun enableSwiftUIBasedFilters(): Boolean
 
@@ -128,8 +132,6 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableViewRecyclingForView(): Boolean
 
   @DoNotStrip public fun enableVirtualViewContainerStateExperimental(): Boolean
-
-  @DoNotStrip public fun fixDifferentiatorParentTagForUnflattenCase(): Boolean
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
 

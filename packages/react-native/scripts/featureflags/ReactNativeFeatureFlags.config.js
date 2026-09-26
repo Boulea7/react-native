@@ -180,12 +180,12 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableAndroidFontWeightAdjustment: {
-      defaultValue: true,
+    enableAndroidAutoOffscreenCompositingForElevation: {
+      defaultValue: false,
       metadata: {
-        dateAdded: '2026-06-29',
+        dateAdded: '2026-08-31',
         description:
-          'When enabled, Android Text measurement and rendering respects the system Bold text accessibility setting via `Configuration.fontWeightAdjustment`.',
+          'When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -210,6 +210,16 @@ const definitions: FeatureFlagDefinitions = {
         purpose: 'release',
       },
       ossReleaseStage: 'stable',
+    },
+    enableBufferedCallInvoker: {
+      defaultValue: true,
+      metadata: {
+        description:
+          'Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.',
+        expectedReleaseValue: true,
+        purpose: 'release',
+      },
+      ossReleaseStage: 'none',
     },
     enableCppPropsIteratorSetter: {
       defaultValue: false,
@@ -280,7 +290,17 @@ const definitions: FeatureFlagDefinitions = {
       defaultValue: false,
       metadata: {
         description:
-          'Enables Fabric commit branching to fix starvation problems and atomic JS updates.',
+          'Enables Fabric commit branching to fix atomic JS updates.',
+        expectedReleaseValue: true,
+        purpose: 'release',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableFabricCommitBranchingMergeOnMainThread: {
+      defaultValue: false,
+      metadata: {
+        description:
+          'Enables Fabric commit branching merge to happen on the main thread to fix starvation problems.',
         expectedReleaseValue: true,
         purpose: 'release',
       },
@@ -381,6 +401,16 @@ const definitions: FeatureFlagDefinitions = {
         purpose: 'experimentation',
       },
       ossReleaseStage: 'none',
+    },
+    enableImperativeEvents: {
+      defaultValue: false,
+      metadata: {
+        description:
+          'When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.',
+        expectedReleaseValue: true,
+        purpose: 'release',
+      },
+      ossReleaseStage: 'canary',
     },
     enableImperativeFocus: {
       defaultValue: false,
@@ -507,27 +537,14 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableRuntimeSchedulerQueueClearingOnError: {
+    enableResizeObserverByDefault: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2026-05-19',
-        description:
-          'When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.',
+        description: 'Enables the ResizeObserver Web API in React Native.',
         expectedReleaseValue: true,
-        purpose: 'experimentation',
+        purpose: 'release',
       },
-      ossReleaseStage: 'experimental',
-    },
-    enableSchedulerDelegateInvalidation: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-05-04',
-        description:
-          'Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'none',
     },
     enableSwiftUIBasedFilters: {
       defaultValue: false,
@@ -617,17 +634,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    fixDifferentiatorParentTagForUnflattenCase: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2026-04-18',
-        description:
-          'Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     fixMappingOfEventPrioritiesBetweenFabricAndReact: {
       defaultValue: false,
       metadata: {
@@ -679,7 +685,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'canary',
     },
     fuseboxScreenshotCaptureEnabled: {
       defaultValue: true,
@@ -1003,6 +1009,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    animatedKeepListenersOnDetach: {
+      defaultValue: true,
+      metadata: {
+        dateAdded: '2026-08-14',
+        description:
+          'When enabled, detaching an animated node from the graph retains listeners registered with `addListener` instead of removing them, so an `Animated.Value` that outlives the components using it still notifies them once it is attached again.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     animatedShouldSyncValueBeforeStartCallback: {
       defaultValue: true,
       metadata: {
@@ -1025,20 +1042,18 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableImperativeEvents: {
+    enableImperativeEvents_DEPRECATED: {
       defaultValue: false,
       metadata: {
         description:
-          'When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.',
+          'Deprecated in favor of the common flag with the same name, which is the one that can be configured by OSS release stage. This is only kept so JS bundles delivered to older native builds, where the common flag is unavailable, can still enable the feature.',
         expectedReleaseValue: true,
         purpose: 'release',
       },
-      // TODO: This should be "canary" now but the OSS renderer cannot be upgraded with the necessary changes until React 19.3.0 is released.
       ossReleaseStage: 'none',
     },
-    // TODO: This feature flag should be shipped and clean up now, but the OSS renderer cannot be upgraded with the necessary changes until React 19.3.0 is released.
     enableNativeEventTargetEventDispatching: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-04-13',
         description:

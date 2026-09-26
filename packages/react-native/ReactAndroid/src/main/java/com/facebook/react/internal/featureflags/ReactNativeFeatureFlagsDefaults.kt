@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<eb9958ddc04dd1cd8d1add366f5f7741>>
+ * @generated SignedSource<<b6c47b10d221b493df4038e492482961>>
  */
 
 /**
@@ -47,11 +47,13 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = false
 
-  override fun enableAndroidFontWeightAdjustment(): Boolean = true
+  override fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = false
 
   override fun enableAndroidTextMeasurementOptimizations(): Boolean = false
 
   override fun enableBridgelessArchitecture(): Boolean = true
+
+  override fun enableBufferedCallInvoker(): Boolean = true
 
   override fun enableCppPropsIteratorSetter(): Boolean = false
 
@@ -66,6 +68,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableExclusivePropsUpdateAndroid(): Boolean = false
 
   override fun enableFabricCommitBranching(): Boolean = false
+
+  override fun enableFabricCommitBranchingMergeOnMainThread(): Boolean = false
 
   override fun enableFabricLogs(): Boolean = false
 
@@ -84,6 +88,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableImageTransparentTintColor(): Boolean = false
 
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = false
+
+  override fun enableImperativeEvents(): Boolean = false
 
   override fun enableImperativeFocus(): Boolean = false
 
@@ -109,9 +115,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
 
-  override fun enableRuntimeSchedulerQueueClearingOnError(): Boolean = false
-
-  override fun enableSchedulerDelegateInvalidation(): Boolean = false
+  override fun enableResizeObserverByDefault(): Boolean = false
 
   override fun enableSwiftUIBasedFilters(): Boolean = false
 
@@ -128,8 +132,6 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableViewRecyclingForView(): Boolean = true
 
   override fun enableVirtualViewContainerStateExperimental(): Boolean = false
-
-  override fun fixDifferentiatorParentTagForUnflattenCase(): Boolean = true
 
   override fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = false
 

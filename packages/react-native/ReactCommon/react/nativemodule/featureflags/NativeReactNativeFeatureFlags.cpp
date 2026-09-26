@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<9c49f2c73941bd43c3a2ab68eb561b6e>>
+ * @generated SignedSource<<5c2c17d2dfe28c291757bc5d9b24b900>>
  */
 
 /**
@@ -104,9 +104,9 @@ bool NativeReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid(
   return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid();
 }
 
-bool NativeReactNativeFeatureFlags::enableAndroidFontWeightAdjustment(
+bool NativeReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation(
     jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableAndroidFontWeightAdjustment();
+  return ReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation();
 }
 
 bool NativeReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations(
@@ -117,6 +117,11 @@ bool NativeReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations(
 bool NativeReactNativeFeatureFlags::enableBridgelessArchitecture(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableBridgelessArchitecture();
+}
+
+bool NativeReactNativeFeatureFlags::enableBufferedCallInvoker(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableBufferedCallInvoker();
 }
 
 bool NativeReactNativeFeatureFlags::enableCppPropsIteratorSetter(
@@ -152,6 +157,11 @@ bool NativeReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid(
 bool NativeReactNativeFeatureFlags::enableFabricCommitBranching(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableFabricCommitBranching();
+}
+
+bool NativeReactNativeFeatureFlags::enableFabricCommitBranchingMergeOnMainThread(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableFabricCommitBranchingMergeOnMainThread();
 }
 
 bool NativeReactNativeFeatureFlags::enableFabricLogs(
@@ -197,6 +207,11 @@ bool NativeReactNativeFeatureFlags::enableImageTransparentTintColor(
 bool NativeReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges();
+}
+
+bool NativeReactNativeFeatureFlags::enableImperativeEvents(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableImperativeEvents();
 }
 
 bool NativeReactNativeFeatureFlags::enableImperativeFocus(
@@ -259,14 +274,9 @@ bool NativeReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid(
   return ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid();
 }
 
-bool NativeReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError(
+bool NativeReactNativeFeatureFlags::enableResizeObserverByDefault(
     jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableRuntimeSchedulerQueueClearingOnError();
-}
-
-bool NativeReactNativeFeatureFlags::enableSchedulerDelegateInvalidation(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation();
+  return ReactNativeFeatureFlags::enableResizeObserverByDefault();
 }
 
 bool NativeReactNativeFeatureFlags::enableSwiftUIBasedFilters(
@@ -307,11 +317,6 @@ bool NativeReactNativeFeatureFlags::enableViewRecyclingForView(
 bool NativeReactNativeFeatureFlags::enableVirtualViewContainerStateExperimental(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableVirtualViewContainerStateExperimental();
-}
-
-bool NativeReactNativeFeatureFlags::fixDifferentiatorParentTagForUnflattenCase(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::fixDifferentiatorParentTagForUnflattenCase();
 }
 
 bool NativeReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact(

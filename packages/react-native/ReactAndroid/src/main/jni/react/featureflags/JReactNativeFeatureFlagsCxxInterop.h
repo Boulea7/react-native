@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<535898dd9498c65f30d56122c06b408b>>
+ * @generated SignedSource<<c26583b78a9872a4918ce98631899c72>>
  */
 
 /**
@@ -66,13 +66,16 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool enableAccumulatedUpdatesInRawPropsAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool enableAndroidFontWeightAdjustment(
+  static bool enableAndroidAutoOffscreenCompositingForElevation(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableAndroidTextMeasurementOptimizations(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableBridgelessArchitecture(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableBufferedCallInvoker(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableCppPropsIteratorSetter(
@@ -94,6 +97,9 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableFabricCommitBranching(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableFabricCommitBranchingMergeOnMainThread(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableFabricLogs(
@@ -121,6 +127,9 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableImmediateUpdateModeForContentOffsetChanges(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
+
+  static bool enableImperativeEvents(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableImperativeFocus(
@@ -159,10 +168,7 @@ class JReactNativeFeatureFlagsCxxInterop
   static bool enablePropsUpdateReconciliationAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
-  static bool enableRuntimeSchedulerQueueClearingOnError(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool enableSchedulerDelegateInvalidation(
+  static bool enableResizeObserverByDefault(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableSwiftUIBasedFilters(
@@ -187,9 +193,6 @@ class JReactNativeFeatureFlagsCxxInterop
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool enableVirtualViewContainerStateExperimental(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
-
-  static bool fixDifferentiatorParentTagForUnflattenCase(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop>);
 
   static bool fixMappingOfEventPrioritiesBetweenFabricAndReact(

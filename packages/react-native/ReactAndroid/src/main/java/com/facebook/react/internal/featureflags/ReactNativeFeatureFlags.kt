@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<2fc347cdb33327437d29e5fd91e24011>>
+ * @generated SignedSource<<ab68be1fe69275aae7e13121d0827f0e>>
  */
 
 /**
@@ -103,10 +103,10 @@ public object ReactNativeFeatureFlags {
   public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = accessor.enableAccumulatedUpdatesInRawPropsAndroid()
 
   /**
-   * When enabled, Android Text measurement and rendering respects the system Bold text accessibility setting via `Configuration.fontWeightAdjustment`.
+   * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
    */
   @JvmStatic
-  public fun enableAndroidFontWeightAdjustment(): Boolean = accessor.enableAndroidFontWeightAdjustment()
+  public fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = accessor.enableAndroidAutoOffscreenCompositingForElevation()
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.
@@ -119,6 +119,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableBridgelessArchitecture(): Boolean = accessor.enableBridgelessArchitecture()
+
+  /**
+   * Route async CallInvoker work through the ReactInstance buffered runtime executor, so it is ordered against callable module calls and cannot run before the JS bundle has finished evaluating. invokeSync is unaffected.
+   */
+  @JvmStatic
+  public fun enableBufferedCallInvoker(): Boolean = accessor.enableBufferedCallInvoker()
 
   /**
    * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
@@ -157,10 +163,16 @@ public object ReactNativeFeatureFlags {
   public fun enableExclusivePropsUpdateAndroid(): Boolean = accessor.enableExclusivePropsUpdateAndroid()
 
   /**
-   * Enables Fabric commit branching to fix starvation problems and atomic JS updates.
+   * Enables Fabric commit branching to fix atomic JS updates.
    */
   @JvmStatic
   public fun enableFabricCommitBranching(): Boolean = accessor.enableFabricCommitBranching()
+
+  /**
+   * Enables Fabric commit branching merge to happen on the main thread to fix starvation problems.
+   */
+  @JvmStatic
+  public fun enableFabricCommitBranchingMergeOnMainThread(): Boolean = accessor.enableFabricCommitBranchingMergeOnMainThread()
 
   /**
    * This feature flag enables logs for Fabric.
@@ -215,6 +227,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = accessor.enableImmediateUpdateModeForContentOffsetChanges()
+
+  /**
+   * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
+   */
+  @JvmStatic
+  public fun enableImperativeEvents(): Boolean = accessor.enableImperativeEvents()
 
   /**
    * Enable ref.focus() and ref.blur() for all views, not just TextInput.
@@ -289,16 +307,10 @@ public object ReactNativeFeatureFlags {
   public fun enablePropsUpdateReconciliationAndroid(): Boolean = accessor.enablePropsUpdateReconciliationAndroid()
 
   /**
-   * When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.
+   * Enables the ResizeObserver Web API in React Native.
    */
   @JvmStatic
-  public fun enableRuntimeSchedulerQueueClearingOnError(): Boolean = accessor.enableRuntimeSchedulerQueueClearingOnError()
-
-  /**
-   * Gates a defensive guard around Scheduler::uiManagerDidDispatchCommand and uiManagerDidFinishTransaction that prevents queued rendering-update lambdas from dereferencing the SchedulerDelegate after it has been destroyed (use-after-free).
-   */
-  @JvmStatic
-  public fun enableSchedulerDelegateInvalidation(): Boolean = accessor.enableSchedulerDelegateInvalidation()
+  public fun enableResizeObserverByDefault(): Boolean = accessor.enableResizeObserverByDefault()
 
   /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.
@@ -347,12 +359,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableVirtualViewContainerStateExperimental(): Boolean = accessor.enableVirtualViewContainerStateExperimental()
-
-  /**
-   * Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.
-   */
-  @JvmStatic
-  public fun fixDifferentiatorParentTagForUnflattenCase(): Boolean = accessor.fixDifferentiatorParentTagForUnflattenCase()
 
   /**
    * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.

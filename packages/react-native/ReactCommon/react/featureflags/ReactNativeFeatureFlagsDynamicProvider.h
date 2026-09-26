@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a629be7af38470ec0cff8391dad1ee1e>>
+ * @generated SignedSource<<5bf7fb7915acc1958df414702331e5fd>>
  */
 
 /**
@@ -18,6 +18,8 @@
  */
 
 #pragma once
+
+#include <react/cxxstableapi/UmbrellaGuard.h>
 
 #include <folly/dynamic.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
@@ -153,13 +155,13 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableAccumulatedUpdatesInRawPropsAndroid();
   }
 
-  bool enableAndroidFontWeightAdjustment() override {
-    auto value = values_["enableAndroidFontWeightAdjustment"];
+  bool enableAndroidAutoOffscreenCompositingForElevation() override {
+    auto value = values_["enableAndroidAutoOffscreenCompositingForElevation"];
     if (!value.isNull()) {
       return value.getBool();
     }
 
-    return ReactNativeFeatureFlagsDefaults::enableAndroidFontWeightAdjustment();
+    return ReactNativeFeatureFlagsDefaults::enableAndroidAutoOffscreenCompositingForElevation();
   }
 
   bool enableAndroidTextMeasurementOptimizations() override {
@@ -178,6 +180,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableBridgelessArchitecture();
+  }
+
+  bool enableBufferedCallInvoker() override {
+    auto value = values_["enableBufferedCallInvoker"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableBufferedCallInvoker();
   }
 
   bool enableCppPropsIteratorSetter() override {
@@ -241,6 +252,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableFabricCommitBranching();
+  }
+
+  bool enableFabricCommitBranchingMergeOnMainThread() override {
+    auto value = values_["enableFabricCommitBranchingMergeOnMainThread"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableFabricCommitBranchingMergeOnMainThread();
   }
 
   bool enableFabricLogs() override {
@@ -322,6 +342,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableImmediateUpdateModeForContentOffsetChanges();
+  }
+
+  bool enableImperativeEvents() override {
+    auto value = values_["enableImperativeEvents"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableImperativeEvents();
   }
 
   bool enableImperativeFocus() override {
@@ -432,22 +461,13 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enablePropsUpdateReconciliationAndroid();
   }
 
-  bool enableRuntimeSchedulerQueueClearingOnError() override {
-    auto value = values_["enableRuntimeSchedulerQueueClearingOnError"];
+  bool enableResizeObserverByDefault() override {
+    auto value = values_["enableResizeObserverByDefault"];
     if (!value.isNull()) {
       return value.getBool();
     }
 
-    return ReactNativeFeatureFlagsDefaults::enableRuntimeSchedulerQueueClearingOnError();
-  }
-
-  bool enableSchedulerDelegateInvalidation() override {
-    auto value = values_["enableSchedulerDelegateInvalidation"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableSchedulerDelegateInvalidation();
+    return ReactNativeFeatureFlagsDefaults::enableResizeObserverByDefault();
   }
 
   bool enableSwiftUIBasedFilters() override {
@@ -520,15 +540,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableVirtualViewContainerStateExperimental();
-  }
-
-  bool fixDifferentiatorParentTagForUnflattenCase() override {
-    auto value = values_["fixDifferentiatorParentTagForUnflattenCase"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::fixDifferentiatorParentTagForUnflattenCase();
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
